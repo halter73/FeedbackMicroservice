@@ -1,10 +1,17 @@
 using Azure.Data.Tables;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
 var feedbackTable = new TableClient(app.Configuration.GetConnectionString("CosmosTableApi"), "Feedback");
 var appNames = app.Configuration.GetSection("AppNames").Get<string[]>();
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.Use((httpContext, next) =>
 {
