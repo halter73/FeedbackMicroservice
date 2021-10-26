@@ -4,6 +4,18 @@ var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
 var feedbackTable = new TableClient(app.Configuration.GetConnectionString("CosmosTableApi"), "Feedback");
+var appNames = app.Configuration.GetSection("AppNames").Get<string[]>();
+
+app.Use((httpContext, next) =>
+{
+    if (!appNames.Contains(httpContext.GetRouteValue("appName")))
+    {
+        httpContext.Response.StatusCode = 400;
+        return Task.CompletedTask;
+    }
+
+    return next(httpContext);
+});
 
 app.MapPost("/{appName}/feedback", async (string appName, Feedback feedback) =>
 {
