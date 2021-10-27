@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>Add Feedback Endpoints</Title>
+			<Shortcut>endpoints</Shortcut>
+			<SnippetTypes>
+				<SnippetType>Expansion</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Code Language="csharp"><![CDATA[app.MapPost("/{appName}/feedback", async (string appName, Feedback feedback) =>
+{
+    if (feedback.Rating is < 1 or > 5)
+    {
+        return Results.BadRequest(new
+        {
+            Details = "Rating must be between 1 and 5!"
+        });
+    }
+
+    var entity = new TableEntity(appName, Guid.NewGuid().ToString())
+    {
+        ["Rating"] = feedback.Rating,
+        ["Comment"] = feedback.Comment,
+    };
+
+    await feedbackTable.AddEntityAsync(entity);
+
+    return Results.Created($$"/{appName}/feedback/{entity.RowKey}", entity);
+});
+
+app.MapGet("/{appName}/feedback", (string appName) =>
+    feedbackTable.QueryAsync<TableEntity>($$"PartitionKey eq '{appName}'"));
+
+app.MapGet("/{appName}/feedback/{id}", (string appName, Guid id) =>
+    feedbackTable.GetEntityAsync<TableEntity>(appName, id.ToString()));$end$]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

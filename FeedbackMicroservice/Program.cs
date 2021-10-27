@@ -7,7 +7,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-var feedbackTable = new TableClient(app.Configuration.GetConnectionString("CosmosTableApi"), "Feedback");
+var feedbackTable = new TableClient(app.Configuration.GetConnectionString("Cosmos"), "Feedback");
 var appNames = app.Configuration.GetSection("AppNames").Get<string[]>();
 
 app.UseSwagger();
@@ -26,7 +26,7 @@ app.Use((httpContext, next) =>
 
 app.MapPost("/{appName}/feedback", async (string appName, Feedback feedback) =>
 {
-    if (feedback.Rating < 1 || feedback.Rating > 5)
+    if (feedback.Rating is < 1 or > 5)
     {
         return Results.BadRequest(new
         {
